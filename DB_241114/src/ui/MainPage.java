@@ -2,152 +2,87 @@ package ui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class MainPage {
-    private JFrame frame;
-    private JButton myPageButton;
-    private JButton libraryButton;
+public class MainPage extends JFrame {
+    public MainPage(String username) {  // 사용자 이름을 인자로 받음
+        setTitle("메인페이지");
+        setSize(1060, 400);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null); // 화면 가운데에 창 배치
 
-    public MainPage() {
-        // 메인 프레임 설정
-        frame = new JFrame("Main Page");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new FlowLayout());
+        // 메인 패널 설정
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
-        // 마이페이지 버튼 설정
-        myPageButton = new JButton("마이페이지");
-        myPageButton.addActionListener(e -> openMyPage());
+        // 사용자 환영 메시지 설정
+        JLabel userLabel = new JLabel(username + "님, 환영합니다!");
+        userLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // 도서관 버튼 설정
-        libraryButton = new JButton("도서관");
-        libraryButton.addActionListener(e -> openLibrary());
-
-        // 버튼들 프레임에 추가
-        frame.add(myPageButton);
-        frame.add(libraryButton);
-
-        // 프레임 설정
-        frame.setSize(1050, 700);
-
-        // 화면 가운데 배치
-        frame.setLocationRelativeTo(null);
-
-        frame.setVisible(true);
-    }
-
-    // 마이페이지 버튼 클릭 시 팝업창 열기
-    private void openMyPage() {
-        JFrame myPageFrame = new JFrame("My Page");
-        myPageFrame.setLayout(new FlowLayout());
-
-        // 내 정보 버튼
-        JButton infoButton = new JButton("내 정보");
-        infoButton.addActionListener(e -> openUserInfo());
-
-        // 대여중 버튼
-        JButton rentalsButton = new JButton("대여중");
-        rentalsButton.addActionListener(e -> openRentals());
-
-        // 장바구니 버튼
+        // 버튼 생성 및 이벤트 추가
+        JButton bookRegisterButton = new JButton("도서등록");
+        JButton myLibraryButton = new JButton("나의 대여목록");
         JButton cartButton = new JButton("장바구니");
-        cartButton.addActionListener(e -> openCart());
+        JButton logoutButton = new JButton("로그아웃");
 
-        // 버튼들 팝업에 추가
-        myPageFrame.add(infoButton);
-        myPageFrame.add(rentalsButton);
-        myPageFrame.add(cartButton);
+        // 버튼의 크기 통일
+        Dimension buttonSize = new Dimension(200, 40);
+        bookRegisterButton.setMaximumSize(buttonSize);
+        myLibraryButton.setMaximumSize(buttonSize);
+        cartButton.setMaximumSize(buttonSize);
+        logoutButton.setMaximumSize(buttonSize);
 
-        // 팝업창 설정
-        myPageFrame.setSize(300, 200);
+        // 각 버튼에 대한 클릭 이벤트 설정
+        bookRegisterButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(null, "도서등록 페이지로 이동합니다.");
+            }
+        });
 
-        // 화면 가운데 배치
-        myPageFrame.setLocationRelativeTo(null);
+        myLibraryButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(null, "나의 미디어목록 페이지로 이동합니다.");
+            }
+        });
 
-        myPageFrame.setVisible(true);
-    }
+        cartButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(null, "장바구니 페이지로 이동합니다.");
+            }
+        });
 
-    // 내 정보 팝업창
-    private void openUserInfo() {
-        JOptionPane.showMessageDialog(frame, "내 정보 팝업창");
-    }
+        logoutButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(null, "로그아웃 되었습니다.");
+            }
+        });
 
-    // 대여중인 책 팝업창
-    private void openRentals() {
-        JOptionPane.showMessageDialog(frame, "대여중인 책 팝업창");
-    }
+        // 패널에 컴포넌트 추가
+        mainPanel.add(Box.createVerticalStrut(20));
+        mainPanel.add(userLabel);
+        mainPanel.add(Box.createVerticalStrut(20));
+        mainPanel.add(bookRegisterButton);
+        mainPanel.add(Box.createVerticalStrut(10));
+        mainPanel.add(myLibraryButton);
+        mainPanel.add(Box.createVerticalStrut(10));
+        mainPanel.add(cartButton);
+        mainPanel.add(Box.createVerticalStrut(10));
+        mainPanel.add(logoutButton);
 
-    // 장바구니 팝업창
-    private void openCart() {
-        JOptionPane.showMessageDialog(frame, "장바구니 팝업창");
-    }
+        // 프레임에 패널 추가
+        add(mainPanel);
 
-    // 도서관 버튼 클릭 시 팝업창 열기
-    private void openLibrary() {
-        JFrame libraryFrame = new JFrame("도서관");
-        libraryFrame.setLayout(new FlowLayout());
-
-        // 전체(책) 버튼
-        JButton allBooksButton = new JButton("전체(책)");
-        allBooksButton.addActionListener(e -> openAllBooks());
-
-        // 장르 버튼
-        JButton genreButton = new JButton("장르");
-        genreButton.addActionListener(e -> openGenre());
-
-        // 작가 버튼
-        JButton authorButton = new JButton("작가");
-        authorButton.addActionListener(e -> openAuthor());
-
-        // 출판사 버튼
-        JButton publisherButton = new JButton("출판사");
-        publisherButton.addActionListener(e -> openPublisher());
-
-        // Top 10 버튼
-        JButton top10Button = new JButton("Top 10");
-        top10Button.addActionListener(e -> openTop10());
-
-        // 버튼들 팝업에 추가
-        libraryFrame.add(allBooksButton);
-        libraryFrame.add(genreButton);
-        libraryFrame.add(authorButton);
-        libraryFrame.add(publisherButton);
-        libraryFrame.add(top10Button);
-
-        // 팝업창 설정
-        libraryFrame.setSize(300, 300);
-
-        // 화면 가운데 배치
-        libraryFrame.setLocationRelativeTo(null);
-
-        libraryFrame.setVisible(true);
-    }
-
-    // 전체 책 팝업창
-    private void openAllBooks() {
-        JOptionPane.showMessageDialog(frame, "전체 책 팝업창");
-    }
-
-    // 장르 팝업창
-    private void openGenre() {
-        JOptionPane.showMessageDialog(frame, "장르별 책 팝업창");
-    }
-
-    // 작가 팝업창
-    private void openAuthor() {
-        JOptionPane.showMessageDialog(frame, "작가별 책 팝업창");
-    }
-
-    // 출판사 팝업창
-    private void openPublisher() {
-        JOptionPane.showMessageDialog(frame, "출판사별 책 팝업창");
-    }
-
-    // Top 10 팝업창
-    private void openTop10() {
-        JOptionPane.showMessageDialog(frame, "Top 10 책 팝업창");
+        setVisible(true);
     }
 
     public static void main(String[] args) {
-        new MainPage();
+        // 로그인된 사용자의 이름을 예시로 전달 ("홍길동"으로 가정)
+        String loggedInUsername = "nameLabel"; 
+        new MainPage(loggedInUsername);
     }
 }
