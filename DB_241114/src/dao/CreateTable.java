@@ -7,9 +7,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 public class CreateTable {
-    private static final String url = "jdbc:oracle:thin:@localhost:1521:xe";
-    private static final String userid = "scott";
-    private static final String passwd = "tiger";
     public static ArrayList<String> CreateTables = new ArrayList<>();
     public static ArrayList<String> DeleteTables = new ArrayList<>();
 
@@ -233,31 +230,20 @@ public class CreateTable {
         DeleteTables.add("DROP SEQUENCE KSHOPPINGCART_SEQ");
     }
 
-    public static void deleteTable(){
-        for(String sql: DeleteTables){
-            executeUpdateSql(sql);
+    public static void createTables() {
+        for (String sql : CreateTables) {
+            CgwDAO.executeUpdateSql(sql);
         }
     }
 
-    public static boolean executeUpdateSql(String sql) {
-        try (Connection con = DriverManager.getConnection(url, userid, passwd);
-             Statement stmt = con.createStatement()) {
-
-            stmt.executeUpdate(sql); // SQL 실행
-            System.out.println("SQL executed successfully: " + sql);
-            return true;
-
-        } catch (SQLException e) {
-            System.err.println("SQL execution failed: " + sql);
-            e.printStackTrace();
-            return false;
+    public static void deleteTable(){
+        for(String sql: DeleteTables){
+            CgwDAO.executeUpdateSql(sql);
         }
     }
 
     public static void main(String[] args) {
-        for (String sql : CreateTables) {
-            executeUpdateSql(sql);
-        }
+        createTables();
 //      해당 주석처리한 코드 실행시 모든 테이블, 트리거, 시퀀스 삭제.
 //      deleteTable();
     }
