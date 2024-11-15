@@ -3,29 +3,47 @@ package dto;
 public class KdhBookDTO {
     private int bookNo;
     private String bookName;
-    private String genre;
-    private String author;
-    private String publisher;
+    private String authorName;
+    private String publisherName;
 
-    public KdhBookDTO(int bookNo, String bookName, String genre, String authorno, String publisherno) {
+    // 생성자
+    public KdhBookDTO(int bookNo, String bookName, String authorName, String publisherName) {
         this.bookNo = bookNo;
         this.bookName = bookName;
-        this.genre = genre;
-        this.author = authorno;
-        this.publisher = publisherno;
-    }
-    
-    public KdhBookDTO(int bookNo, String bookName, String authorno, String publisherno) {
-        this.bookNo = bookNo;
-        this.bookName = bookName;
-        this.author = authorno;
-        this.publisher = publisherno;
+        this.authorName = authorName;
+        this.publisherName = publisherName;
     }
 
-    // Getters
-    public int getBookNo() { return bookNo; }
-    public String getBookName() { return bookName; }
-    public String getGenre() { return genre; }
-    public String getAuthor() { return author; }
-    public String getPublisher() { return publisher; }
+    // Getter와 Setter
+    public int getBookNo() {
+        return bookNo;
+    }
+
+    public void setBookNo(int bookNo) {
+        this.bookNo = bookNo;
+    }
+
+    public String getBookName() {
+        return bookName;
+    }
+
+    public void setBookName(String bookName) {
+        this.bookName = bookName;
+    }
+
+    public String getAuthorName() {
+        return authorName;
+    }
+
+    public void setAuthorName(String authorName) {
+        this.authorName = authorName;
+    }
+
+    public String getPublisherName() {
+        return publisherName;
+    }
+
+    public void setPublisherName(String publisherName) {
+        this.publisherName = publisherName;
+    }
 }
