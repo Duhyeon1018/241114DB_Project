@@ -36,8 +36,8 @@ public class UserDAO {
 		String sql = "INSERT INTO KUSERTABLE (USERID, USERNAME, USERPASSWORD) VALUES (?, ?, ?)";
 		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setString(1, user.getUserId());
-			stmt.setString(2, user.getPassword());
-			stmt.setString(3, user.getUsername());
+			stmt.setString(2, user.getUsername());
+			stmt.setString(3, user.getPassword());
 			return stmt.executeUpdate() > 0; // 데이터 삽입 성공 여부 확인
 		} catch (SQLException e) {
 			e.printStackTrace();
