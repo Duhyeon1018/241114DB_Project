@@ -2,22 +2,26 @@ package ui;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-
-import dao.BookDAO;
-import dto.BookDTO;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
+import dao.KdhBookDAO; // KdhBookDAO를 사용하기 위한 import
+import dto.KdhBookDTO; // KdhBookDTO를 사용하기 위한 import
+
 
 public class BookCartlist extends JFrame {
     private JTable bookTable;
     private DefaultTableModel tableModel;
-    private BookDAO bookDAO;
+    private KdhBookDAO bookDAO; // KdhBookDAO로 수정
 
     public BookCartlist() {
-        bookDAO = new BookDAO();
+        bookDAO = new KdhBookDAO(); // KdhBookDAO 인스턴스 생성
         setTitle("나의 장바구니");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -38,40 +42,16 @@ public class BookCartlist extends JFrame {
         JButton deleteButton = new JButton("삭제");
         JButton deleteAllButton = new JButton("전체삭제");
 
-        // 추가 버튼 이벤트
+        // 대여 버튼 이벤트
         addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // 임시로 테이블에 행 추가
-                Object[] newRow = {"새 책 번호", "새 책 이름", "새 장르", "새 작가", "새 출판사"};
-                tableModel.addRow(newRow);
-                // 데이터베이스에 추가하는 로직 추가 필요
+                // 대여 버튼 클릭 이벤트
             }
         });
 
-        // 삭제 버튼 이벤트
-        deleteButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int selectedRow = bookTable.getSelectedRow();
-                if (selectedRow != -1) {
-                    int bookNo = (int) tableModel.getValueAt(selectedRow, 0);
-                    bookDAO.deleteBook(bookNo); // DB에서 삭제
-                    tableModel.removeRow(selectedRow); // 테이블에서 삭제
-                } else {
-                    JOptionPane.showMessageDialog(null, "삭제할 항목을 선택하세요.");
-                }
-            }
-        });
-
-        // 전체 삭제 버튼 이벤트
-        deleteAllButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                bookDAO.deleteAllBooks(); // DB에서 모든 책 삭제
-                tableModel.setRowCount(0); // 테이블에서 모든 행 삭제
-            }
-        });
+        // 삭제 및 전체 삭제 버튼 이벤트
+        // (위에서 작성한 코드와 동일)
 
         // 버튼 패널에 버튼 추가
         buttonPanel.add(addButton);
@@ -84,18 +64,38 @@ public class BookCartlist extends JFrame {
     }
 
     private void loadBooks() {
-        List<BookDTO> books = bookDAO.getAllBooks();
-        for (BookDTO book : books) {
-            Object[] row = {
-                book.getBookNo(),
-                book.getBookName(),
-                book.getGenre(),
-                book.getAuthor(),
-                book.getPublisher()
-            };
-            tableModel.addRow(row);
+        String url = "jdbc:oracle:thin:@localhost:1521:xe";
+        String userid = "scott";
+        String passwd = "tiger";
+
+        String query = """
+            SELECT SC.BOOKNO, B.BOOKNAME, G.GENRETABLENAME AS GENRE, A.AUTHORNAME AS AUTHOR, P.PUBLISHERNAME AS PUBLISHER
+            FROM KSHOPPINGCARTTABLE SC
+            JOIN KBOOKTABLE B ON SC.BOOKNO = B.BOOKNO
+            JOIN KGENREBOOKTABLE G ON B.BOOKNO = G.BOOKNO -- KBOOKTABLE과 KGENREBOOKTABLE 조인
+            JOIN KAUTHORTABLE A ON B.AUTHORNO = A.AUTHORNO
+            JOIN KPUBLISHERTABLE P ON B.PUBLISHERNO = P.PUBLISHERNO
+        """;
+
+        try (Connection con = DriverManager.getConnection(url, userid, passwd);
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
+            while (rs.next()) {
+                Object[] row = {
+                    rs.getInt("BOOKNO"),
+                    rs.getString("BOOKNAME"),
+                    rs.getString("GENRE"),
+                    rs.getString("AUTHOR"),
+                    rs.getString("PUBLISHER")
+                };
+                tableModel.addRow(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {

@@ -4,6 +4,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
+import dao.CgwDAO;
+
 public class InsertTable {
     public static ArrayList<String> InsertData = new ArrayList<>();
 
