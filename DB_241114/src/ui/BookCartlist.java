@@ -137,13 +137,13 @@ public class BookCartlist extends JFrame {
             e.printStackTrace();
         }
     }
-//
-//    public static void main(String[] args) {
-//        SwingUtilities.invokeLater(() -> {
-//            BookCartlist manager = new BookCartlist();
-//            manager.setVisible(true);
-//        });
-//    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            BookCartlist manager = new BookCartlist();
+            manager.setVisible(true);
+        });
+    }
 }
 
 
