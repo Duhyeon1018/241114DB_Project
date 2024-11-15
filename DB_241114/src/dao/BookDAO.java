@@ -1,8 +1,14 @@
 package dao;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+
 import dto.BookDTO;
 
 public class BookDAO {
@@ -12,67 +18,51 @@ public class BookDAO {
 
     public List<BookDTO> getAllBooks() {
         List<BookDTO> books = new ArrayList<>();
-        String sql = "SELECT KBOOKTABLE.BOOKNO, KBOOKTABLE.BOOKNAME, KGENRETABLE.GENRETABLENAME AS GENRE, "
-                   + "KPUBLISHERTABLE.PUBLISHERNAME AS PUBLISHER, KAUTHORTABLE.AUTHORNAME AS AUTHOR "
-                   + "FROM KBOOKTABLE "
-                   + "JOIN KAUTHORTABLE ON KBOOKTABLE.AUTHORNO = KAUTHORTABLE.AUTHORNO "
-                   + "JOIN KPUBLISHERTABLE ON KBOOKTABLE.PUBLISHERNO = KPUBLISHERTABLE.PUBLISHERNO "
-                   + "JOIN KGENREBOOKTABLE ON KBOOKTABLE.BOOKNO = KGENREBOOKTABLE.BOOKNO "
-                   + "JOIN KGENRETABLE ON KGENREBOOKTABLE.GENRETABLENO = KGENRETABLE.GENRETABLENO";
+        String query = "SELECT BOOKNO, BOOKNAME, GENRE, AUTHORNO, PUBLISHERNO FROM KBOOKTABLE";
 
         try (Connection con = DriverManager.getConnection(url, userid, passwd);
              Statement stmt = con.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             ResultSet rs = stmt.executeQuery(query)) {
 
             while (rs.next()) {
-                BookDTO book = new BookDTO(
-                    rs.getInt("BOOKNO"),
-                    rs.getString("BOOKNAME"),
-                    rs.getString("GENRE"),
-                    rs.getString("PUBLISHER"),
-                    rs.getString("AUTHOR")
-                );
-                books.add(book);
+                books.add(new BookDTO(
+                        rs.getInt("BOOKNO"),
+                        rs.getString("BOOKNAME"),
+                        rs.getString("GENRE"),
+                        rs.getString("AUTHORNO"),
+                        rs.getString("PUBLISHERNO")
+                ));
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return books;
     }
 
-    public List<BookDTO> searchBooksByName(String bookName) {
-        List<BookDTO> books = new ArrayList<>();
-        String sql = "SELECT KBOOKTABLE.BOOKNO, KBOOKTABLE.BOOKNAME, KGENRETABLE.GENRETABLENAME AS GENRE, "
-                   + "KPUBLISHERTABLE.PUBLISHERNAME AS PUBLISHER, KAUTHORTABLE.AUTHORNAME AS AUTHOR "
-                   + "FROM KBOOKTABLE "
-                   + "JOIN KAUTHORTABLE ON KBOOKTABLE.AUTHORNO = KAUTHORTABLE.AUTHORNO "
-                   + "JOIN KPUBLISHERTABLE ON KBOOKTABLE.PUBLISHERNO = KPUBLISHERTABLE.PUBLISHERNO "
-                   + "JOIN KGENREBOOKTABLE ON KBOOKTABLE.BOOKNO = KGENREBOOKTABLE.BOOKNO "
-                   + "JOIN KGENRETABLE ON KGENREBOOKTABLE.GENRETABLENO = KGENRETABLE.GENRETABLENO "
-                   + "WHERE KBOOKTABLE.BOOKNAME LIKE ?";
-
+    public void deleteBook(int bookNo) {
+        String sql = "DELETE FROM KBOOKTABLE WHERE BOOKNO = ?";
         try (Connection con = DriverManager.getConnection(url, userid, passwd);
              PreparedStatement pstmt = con.prepareStatement(sql)) {
-            pstmt.setString(1, "%" + bookName + "%");
-            ResultSet rs = pstmt.executeQuery();
-
-            while (rs.next()) {
-                BookDTO book = new BookDTO(
-                    rs.getInt("BOOKNO"),
-                    rs.getString("BOOKNAME"),
-                    rs.getString("GENRE"),
-                    rs.getString("PUBLISHER"),
-                    rs.getString("AUTHOR")
-                );
-                books.add(book);
-            }
-
+            pstmt.setInt(1, bookNo);
+            pstmt.executeUpdate();
+            System.out.println("Book deleted successfully: " + bookNo);
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return books;
+    }
+
+    public void deleteAllBooks() {
+        String sql = "DELETE FROM KBOOKTABLE";
+        try (Connection con = DriverManager.getConnection(url, userid, passwd);
+             Statement stmt = con.createStatement()) {
+            stmt.executeUpdate(sql);
+            System.out.println("All books deleted successfully.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
+
+
 
 

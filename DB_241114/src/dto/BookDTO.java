@@ -4,38 +4,31 @@ public class BookDTO {
     private int bookNo;
     private String bookName;
     private String genre;
-    private String publisher;
     private String author;
+    private String publisher;
 
-    // 생성자
-    public BookDTO(int bookNo, String bookName, String genre, String publisher, String author) {
+    public BookDTO(int bookNo, String bookName, String genre, String authorno, String publisherno) {
         this.bookNo = bookNo;
         this.bookName = bookName;
         this.genre = genre;
-        this.publisher = publisher;
-        this.author = author;
+        this.author = authorno;
+        this.publisher = publisherno;
+    }
+    
+    public BookDTO(int bookNo, String bookName, String authorno, String publisherno) {
+        this.bookNo = bookNo;
+        this.bookName = bookName;
+        this.author = authorno;
+        this.publisher = publisherno;
     }
 
-    // Getter 메서드
-    public int getBookNo() {
-        return bookNo;
-    }
-
-    public String getBookName() {
-        return bookName;
-    }
-
-    public String getGenre() {
-        return genre;
-    }
-
-    public String getPublisher() {
-        return publisher;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
+    // Getters
+    public int getBookNo() { return bookNo; }
+    public String getBookName() { return bookName; }
+    public String getGenre() { return genre; }
+    public String getAuthor() { return author; }
+    public String getPublisher() { return publisher; }
 }
+
 
 
