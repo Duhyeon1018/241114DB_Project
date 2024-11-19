@@ -1,153 +1,164 @@
 package ui;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-public class MainPage {
-    private JFrame frame;
-    private JButton myPageButton;
-    private JButton libraryButton;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
-    public MainPage() {
-        // 메인 프레임 설정
-        frame = new JFrame("Main Page");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new FlowLayout());
+import dao.CgwDAO;
+import dao.UserDAO;
 
-        // 마이페이지 버튼 설정
-        myPageButton = new JButton("마이페이지");
-        myPageButton.addActionListener(e -> openMyPage());
+public class MainPage extends JFrame {
 
-        // 도서관 버튼 설정
-        libraryButton = new JButton("도서관");
-        libraryButton.addActionListener(e -> openLibrary());
+	private UserDAO userDAO; // 인스턴스 선언
+	private String userID;
+	private String userName;
 
-        // 버튼들 프레임에 추가
-        frame.add(myPageButton);
-        frame.add(libraryButton);
+	public MainPage(String userID, String userName) {
+		this.userID = userID; // 필드에 userID 초기화
+		this.userName = userName;
+		
+		setTitle("메인페이지");
+		setSize(700, 400);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setLocationRelativeTo(null); // 화면 가운데에 창 배치
 
-        // 프레임 설정
-        frame.setSize(1050, 700);
+		userDAO = new UserDAO(); // 인스턴스 초기화
 
-        // 화면 가운데 배치
-        frame.setLocationRelativeTo(null);
+// 메인 패널 설정
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
 
-        frame.setVisible(true);
-    }
+// 사용자 환영 메시지 설정
+		JLabel userLabel = new JLabel(userName + "님, 환영합니다!");
+		userLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-    // 마이페이지 버튼 클릭 시 팝업창 열기
-    private void openMyPage() {
-        JFrame myPageFrame = new JFrame("My Page");
-        myPageFrame.setLayout(new FlowLayout());
+// 버튼 생성 및 이벤트 추가
+		JButton bookRegisterButton = new JButton("도서관");
+		JButton myLibraryButton = new JButton("나의 대여목록");
+		JButton cartButton = new JButton("장바구니");
+		JButton logoutButton = new JButton("로그아웃");
+		JButton withdrawButton = new JButton("회원탈퇴");
 
-        // 내 정보 버튼
-        JButton infoButton = new JButton("내 정보");
-        infoButton.addActionListener(e -> openUserInfo());
+// 버튼의 크기 통일
+		Dimension buttonSize = new Dimension(200, 40);
+		bookRegisterButton.setMaximumSize(buttonSize);
+		myLibraryButton.setMaximumSize(buttonSize);
+		cartButton.setMaximumSize(buttonSize);
+		logoutButton.setMaximumSize(buttonSize);
+		withdrawButton.setMaximumSize(buttonSize);
 
-        // 대여중 버튼
-        JButton rentalsButton = new JButton("대여중");
-        rentalsButton.addActionListener(e -> openRentals());
+		bookRegisterButton.addActionListener(e -> movelibrary()); // 도서관이동
+		myLibraryButton.addActionListener(e -> myLibrary()); // 장바구니
+		cartButton.addActionListener(e -> cart(1));
+		logoutButton.addActionListener(e -> handleLogout());
+		withdrawButton.addActionListener(e -> withdraw());
 
-        // 장바구니 버튼
-        JButton cartButton = new JButton("장바구니");
-        cartButton.addActionListener(e -> openCart());
+		buttonPanel.add(Box.createVerticalStrut(20));
+		buttonPanel.add(userLabel); // 환영 메시지 먼저 추가
+		buttonPanel.add(Box.createVerticalStrut(20));
+		buttonPanel.add(bookRegisterButton);
+		buttonPanel.add(Box.createVerticalStrut(10));
+		buttonPanel.add(myLibraryButton);
+		buttonPanel.add(Box.createVerticalStrut(10));
+		buttonPanel.add(cartButton);
+		buttonPanel.add(Box.createVerticalStrut(10));
+		buttonPanel.add(logoutButton);
+		buttonPanel.add(Box.createVerticalStrut(10));
+		buttonPanel.add(withdrawButton);
+		buttonPanel.add(Box.createVerticalStrut(10));
+		add(buttonPanel);
 
-        // 버튼들 팝업에 추가
-        myPageFrame.add(infoButton);
-        myPageFrame.add(rentalsButton);
-        myPageFrame.add(cartButton);
+// 프레임에 패널 추가
+		add(buttonPanel);
 
-        // 팝업창 설정
-        myPageFrame.setSize(300, 200);
+		setVisible(true);
 
-        // 화면 가운데 배치
-        myPageFrame.setLocationRelativeTo(null);
+	}
 
-        myPageFrame.setVisible(true);
-    }
+//도서관
+	private void movelibrary() {
+		this.dispose();
+		new UI2Cgw("id", "pas").setVisible(true);
+	}
 
-    // 내 정보 팝업창
-    private void openUserInfo() {
-        JOptionPane.showMessageDialog(frame, "내 정보 팝업창");
-    }
+//마이페이-대여목록
+	private void myLibrary() {
+		this.dispose();
+		new MyRentalList().setVisible(true);
+	}
 
-    // 대여중인 책 팝업창
-    private void openRentals() {
-        JOptionPane.showMessageDialog(frame, "대여중인 책 팝업창");
-    }
+//마이페이지-장바구니
+	public void cart(int a) {
+		this.dispose();
+		new MyPageUI(a).setVisible(true);
+	}
 
-    // 장바구니 팝업창
-    private void openCart() {
-        JOptionPane.showMessageDialog(frame, "장바구니 팝업창");
-    }
+//로그아웃
+	private void handleLogout() {
+		new LoginUI().setVisible(true);
+		dispose();
+	}
 
-    // 도서관 버튼 클릭 시 팝업창 열기
-    private void openLibrary() {
-        JFrame libraryFrame = new JFrame("도서관");
-        libraryFrame.setLayout(new FlowLayout());
+	private void withdraw() {
+		int confirm = JOptionPane.showConfirmDialog(null, "정말로 회원 탈퇴를 하시겠습니까?", "회원 탈퇴", JOptionPane.YES_NO_OPTION);
+		if (confirm == JOptionPane.YES_OPTION) {
+			int num = getUserNo(userID);
+			deleteUserFromDB(num);
+			JOptionPane.showMessageDialog(null, "회원 탈퇴가 완료되었습니다.");
+			dispose(); // 현재 창 닫기
+			new LoginUI(); // 로그인 페이지로 이동 (회원 탈퇴 후)
+		}
 
-        // 전체(책) 버튼
-        JButton allBooksButton = new JButton("전체(책)");
-        allBooksButton.addActionListener(e -> openAllBooks());
+	}
 
-        // 장르 버튼
-        JButton genreButton = new JButton("장르");
-        genreButton.addActionListener(e -> openGenre());
+	private int getUserNo(String userID) {
+		String sql = "SELECT USERNO FROM KUSERTABLE WHERE USERID = ?";
+		int userNo = -1; // 기본값으로 -1을 설정
 
-        // 작가 버튼
-        JButton authorButton = new JButton("작가");
-        authorButton.addActionListener(e -> openAuthor());
+// 데이터베이스 연결 설정
+		String url = "jdbc:oracle:thin:@localhost:1521:xe";
+		String userid = "scott";
+		String password = "tiger";
 
-        // 출판사 버튼
-        JButton publisherButton = new JButton("출판사");
-        publisherButton.addActionListener(e -> openPublisher());
+		try (Connection con = DriverManager.getConnection(url, userid, password);
+				PreparedStatement pstmt = con.prepareStatement(sql)) {
 
-        // Top 10 버튼
-        JButton top10Button = new JButton("Top 10");
-        top10Button.addActionListener(e -> openTop10());
+			pstmt.setString(1, userID); // ?에 userID 값 설정
+			try (ResultSet rs = pstmt.executeQuery()) {
+				if (rs.next()) {
+					userNo = rs.getInt("USERNO"); // 결과에서 USERNO를 읽어서 저장
+				}
+			}
 
-        // 버튼들 팝업에 추가
-        libraryFrame.add(allBooksButton);
-        libraryFrame.add(genreButton);
-        libraryFrame.add(authorButton);
-        libraryFrame.add(publisherButton);
-        libraryFrame.add(top10Button);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-        // 팝업창 설정
-        libraryFrame.setSize(300, 300);
+		return userNo; // 조회된 userNo 반환
+	}
 
-        // 화면 가운데 배치
-        libraryFrame.setLocationRelativeTo(null);
+	private void deleteUserFromDB(int userNo) {
+		String sql = "DELETE FROM KUSERTABLE WHERE USERNO = " + userNo;
+// 해당 SQL을 실행하여 DB에서 사용자 정보 삭제
+		CgwDAO.executeUpdateSql(sql);
+	}
 
-        libraryFrame.setVisible(true);
-    }
-
-    // 전체 책 팝업창
-    private void openAllBooks() {
-        JOptionPane.showMessageDialog(frame, "전체 책 팝업창");
-    }
-
-    // 장르 팝업창
-    private void openGenre() {
-        JOptionPane.showMessageDialog(frame, "장르별 책 팝업창");
-    }
-
-    // 작가 팝업창
-    private void openAuthor() {
-        JOptionPane.showMessageDialog(frame, "작가별 책 팝업창");
-    }
-
-    // 출판사 팝업창
-    private void openPublisher() {
-        JOptionPane.showMessageDialog(frame, "출판사별 책 팝업창");
-    }
-
-    // Top 10 팝업창
-    private void openTop10() {
-        JOptionPane.showMessageDialog(frame, "Top 10 책 팝업창");
-    }
-
-    public static void main(String[] args) {
-        new MainPage();
-    }
+	public static void main(String[] args) {
+// 로그인된 사용자의 ID와 이름을 예시로 전달 ("12345"와 "홍길동"으로 가정)
+		String loggedInUserId = "1";
+		String loggedInUsername = "홍길동";
+		new MainPage(loggedInUserId, loggedInUsername);
+	}
 }

@@ -1,98 +1,156 @@
 package ui;
 
 import java.awt.BorderLayout;
-import java.text.SimpleDateFormat;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-import dao.MyBookDAO;
-import dto.RentalDTO;
+import dao.MyRentalDAO;
+import dto.MyRentalDTO;
+import dao.UserDAO;
 
 public class MyRentalList extends JFrame {
-	private JFrame frame;
-	
-	// 테이블 모델 생성
-	private DefaultTableModel rentalBookTableModel;
-	private JTable rentalBookTable;
+// 화면에 표시할 패널들을 생성
+	private JPanel mainPanel;
+	private JPanel ViewPanel;
+	private JPanel cartPanel;
+	private JTable bookTable;
+	public DefaultTableModel tableModel;
+	private String[] columnNames;
+	private MyRentalDAO rentdao;
+	private JLabel titleLabel;
 
-	
-	MyBookDAO dao = null;
-	
-	
+	private UserDAO userDAO;
 	
 	public MyRentalList() {
-	    // JFrame 설정 
-		frame = new JFrame("Books Page");
-		frame.setSize(900, 600);
-		frame.setLocationRelativeTo(null); 
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout()); // 메인 프레임에 BorderLayout 설정
-        
-        frame.add(new JLabel("내 대여 목록"), BorderLayout.NORTH);
-        
-        
-        // 테이블 모델 초기화 (열 이름 정의)
-        String[] columnNames = {"대여번호", "책번호", "책이름", "대여시작일", "대여종료일"};
-        rentalBookTableModel = new DefaultTableModel(columnNames, 0);
-        
-        // JTable 생성
-        rentalBookTable = new JTable(rentalBookTableModel);
-        rentalBookTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+		setTitle("마이페이지");
+		setSize(700, 400);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setLayout(new BorderLayout());
+		setLocationRelativeTo(null);
 
-	    // 테스트 데이터를 테이블 모델에 추가
-//        addTestData();
+		userDAO = new UserDAO();
+		
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		
+		JButton mainButton = new JButton("메인페이지");
+        buttonPanel.add(mainButton);
+	        
+		add(buttonPanel, BorderLayout.NORTH);
+		
 
-	    JScrollPane scrollPane = new JScrollPane(rentalBookTable);
-	    frame.add(scrollPane, BorderLayout.CENTER);
-	    
-	    // JFrame 설정
-        frame.setVisible(true); // 모든 설정 후 창 보이기
-        
-        refreshTable();
-        
+		mainPanel = new JPanel(new BorderLayout());
+		
+		// 새로운 테이블 및 스크롤 패널 생성
+				columnNames = new String[] { "대여번호", "제목", "대여시작일", "대여종료일", "상태" };
+				tableModel = new DefaultTableModel(columnNames, 0);
+				
+				JTable boardTable = new JTable(tableModel);
+				JScrollPane scrollPane = new JScrollPane(boardTable);
+
+				// ViewPanel을 새로 구성하여 mainPanel에 추가
+				ViewPanel = new JPanel();
+				ViewPanel.setLayout(new BorderLayout());
+				
+				ViewPanel.add(scrollPane, BorderLayout.CENTER);
+
+				// mainPanel에 ViewPanel을 추가 (왼쪽에 위치하도록 설정)
+				mainPanel.add(ViewPanel);
+
+				// ---------------------------------------------------
+
+				// DAO 객체 초기화
+				if (rentdao == null) {
+					rentdao = new MyRentalDAO();
+				}
+
+				// 이전 데이터 제거
+				tableModel.setRowCount(0);
+
+				// 대여 기록 조회
+				ArrayList<MyRentalDTO> resultList = rentdao.getRentalAllBooks();
+
+				if (resultList.isEmpty()) {
+					System.out.println("No rental records found.");
+				}
+
+				// 현재 날짜
+				LocalDate currentDate = LocalDate.now();
+
+				// 날짜 형식 지정
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+				for (MyRentalDTO rentalDTO : resultList) {
+					LocalDate rentalEndDate = null;
+					LocalDate rentalStartDate = null;
+
+					try {
+						// 대여 종료 날짜 처리 (시간 부분 제거)
+						String rentalEndDateStr = rentalDTO.getReturnDate().split(" ")[0];
+						rentalEndDate = LocalDate.parse(rentalEndDateStr);
+
+						// 대여 시작 날짜 처리 (시간 부분 제거)
+						String rentalStartDateStr = rentalDTO.getRentalDate().split(" ")[0];
+						rentalStartDate = LocalDate.parse(rentalStartDateStr);
+					} catch (DateTimeParseException e) {
+						System.out.println("Invalid date format: " + e.getMessage());
+					}
+
+					// 상태 계산
+					String status = (rentalEndDate != null && rentalEndDate.isBefore(currentDate)) ? "반납완료" : "대여중";
+
+					// 날짜 출력 형식 변경
+					String formattedRentalStartDate = rentalStartDate != null ? rentalStartDate.format(formatter) : "N/A";
+					String formattedReturnDate = rentalEndDate != null ? rentalEndDate.format(formatter) : "N/A";
+
+					Object[] rowData = { rentalDTO.getRentalId(), rentalDTO.getBookName(), formattedRentalStartDate,
+							formattedReturnDate, status };
+
+					tableModel.addRow(rowData);
+				}
+		
+		
+		add(mainPanel, BorderLayout.CENTER); // 메인 패널 추가
+
+
+		mainButton.addActionListener(e -> mainPage()); 
+		
+		setVisible(true);
 	}
-
-
-	// 테이블 갱신 메서드
-	// 테이블 갱신 메서드
-	// 테이블 갱신 메서드
-	public void refreshTable() {
-	    // DAO 객체 초기화
-	    if (dao == null) {
-	        dao = new MyBookDAO();
-	    }
-
-	    // 이전 데이터 제거
-	    rentalBookTableModel.setRowCount(0);
-
-	    // 대여 기록 조회
-	    ArrayList<RentalDTO> resultList = dao.getRentalAllBooks();
-	    
-	    if (resultList.isEmpty()) {
-	        System.out.println("No rental records found.");
-	    }
-	    
-	    for (RentalDTO rentalDTO : resultList) {
-	        Object[] rowData = {
-	            rentalDTO.getRentalId(),
-	            rentalDTO.getUserId(),
-	            rentalDTO.getBookId(),
-	            rentalDTO.getRentalDate(),
-	            rentalDTO.getReturnDate()
-	        };
-	        rentalBookTableModel.addRow(rowData);
-	    }
-	}
-
-
-
 	
+	private void mainPage() {
+	    this.dispose(); // 현재 창 닫기
+	    // 사용자 이름 가져오기
+	    String userId = null; // 테스트용
+	    String userName = userDAO.getUserNameById(userId); // 사용자 이름 가져오기
+
+	    // 새로운 메인 페이지 열기
+	    new MainPage("id", userName).setVisible(true);
+	}
+
+
 	public static void main(String[] args) {
-        new MyRentalList();
-    }
+		new MyRentalList();
+	}
 }
